@@ -2,6 +2,7 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const sgMail = require("@sendgrid/mail");
+const crypto = require("crypto");
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const register = async (req, res) => {
@@ -149,4 +150,59 @@ const verifyOtp = async (req, res) => {
   }
 };
 
-module.exports = { register, login, verifyOtp };
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User does not exist" });
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const resetTokenHashed = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+    user.resetPasswordToken = resetTokenHashed;
+    user.resetPasswordExpires = Date.now() + 60 * 60 * 1000;
+    await user.save();
+
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+    const msg = {
+      to: email,
+      from: { email: "no-reply@streamjump.info", name: "Jump" },
+      subject: "Password Reset Request",
+      html: `
+        <p>You requested a password reset.</p>
+        <p>Click this link to reset your password:</p>
+        <a href="${resetUrl}">${resetUrl}</a>
+        <p>This link will expire in 1 hour.</p>
+      `,
+    };
+    await sgMail.send(msg);
+    res.status(200).json({ message: "Password reset email sent" });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "internal server error" });
+  }
+};
+const resetPassword = async (req, res) => {
+  const { token, newPassword } = req.body;
+  try {
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+    if (!user) return res.status(400).json({ message: "can not find user" });
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+
+    await user.save();
+    res.status(200).json({ message: "password sucessfully changed" });
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ message: "internal server error" });
+  }
+};
+
+module.exports = { register, login, verifyOtp, forgotPassword, resetPassword };

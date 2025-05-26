@@ -1,7 +1,13 @@
 const express = require("express");
 const mongoose = require("mongoose");
 require("dotenv").config();
-const { register, login, verifyOtp } = require("./controllers/authController");
+const {
+  register,
+  login,
+  verifyOtp,
+  forgotPassword,
+  resetPassword,
+} = require("./controllers/authController");
 const { protect } = require("./middleware/authMiddleware");
 
 const app = express();
@@ -24,3 +30,5 @@ app.get("/", (req, res) => {
 app.post("/api/register", register);
 app.post("/api/login", login);
 app.post("/api/otp", verifyOtp);
+app.post("/api/forgot-password", forgotPassword);
+app.post("/api/reset-password", resetPassword);
