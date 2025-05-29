@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 require("dotenv").config();
+const cors = require("cors");
 const {
   login,
   forgotPassword,
@@ -14,6 +15,13 @@ const { protect } = require("./middleware/authMiddleware");
 
 const app = express();
 app.use(express.json());
+
+app.use(
+  cors({
+    origin: ["http://localhost:3000", "https://streamjump.info"],
+    credentials: true,
+  })
+);
 
 mongoose
   .connect(process.env.MONGODB_URI)
