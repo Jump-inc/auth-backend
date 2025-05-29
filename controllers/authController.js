@@ -1,3 +1,223 @@
+/**
+ * @swagger
+ * /api/auth/pre-register:
+ *   post:
+ *     summary: Send OTP to email
+ *     tags: [Auth]
+ *     requestBody:
+ *       description: Email to receive OTP
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *     responses:
+ *       200:
+ *         description: OTP sent successfully
+ *       400:
+ *         description: Unable to send OTP
+ */
+
+/**
+ * @swagger
+ * /api/auth/verify-email:
+ *   post:
+ *     summary: Verify user's email with OTP
+ *     tags: [Auth]
+ *     requestBody:
+ *       description: Email and OTP for verification
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - otp
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: user@example.com
+ *               otp:
+ *                 type: string
+ *                 example: "123456"
+ *     responses:
+ *       200:
+ *         description: Email successfully verified
+ *       400:
+ *         description: Invalid or expired OTP
+ */
+
+/**
+ * @swagger
+ * /api/auth/save-dob:
+ *   post:
+ *     summary: Save user's date of birth after email verification
+ *     tags: [Auth]
+ *     requestBody:
+ *       description: Email and date of birth
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - dob
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: user@example.com
+ *               dob:
+ *                 type: string
+ *                 format: date
+ *                 example: 2010-05-20
+ *     responses:
+ *       200:
+ *         description: DOB saved successfully
+ *       400:
+ *         description: Email not verified or user under 13 years old
+ *       500:
+ *         description: Failed to save DOB
+ */
+
+/**
+ * @swagger
+ * /api/auth/complete-register:
+ *   post:
+ *     summary: Complete registration by setting password
+ *     tags: [Auth]
+ *     requestBody:
+ *       description: Email, password, and confirmPassword to finish signup
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *               - confirmPassword
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: user@example.com
+ *               password:
+ *                 type: string
+ *                 format: password
+ *               confirmPassword:
+ *                 type: string
+ *                 format: password
+ *     responses:
+ *       200:
+ *         description: User successfully created
+ *       400:
+ *         description: Passwords do not match or incomplete registration
+ *       500:
+ *         description: Internal server error
+ */
+
+/**
+ * @swagger
+ * /api/login:
+ *   post:
+ *     summary: User login with email and password
+ *     tags: [Auth]
+ *     requestBody:
+ *       description: User credentials
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: user@example.com
+ *               password:
+ *                 type: string
+ *                 format: password
+ *     responses:
+ *       200:
+ *         description: Login successful and JWT token returned
+ *       400:
+ *         description: Unable to log in
+ *       500:
+ *         description: User not found or invalid credentials
+ */
+
+/**
+ * @swagger
+ * /api/forgot-password:
+ *   post:
+ *     summary: Send password reset email
+ *     tags: [Auth]
+ *     requestBody:
+ *       description: Email to send password reset link
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: user@example.com
+ *     responses:
+ *       200:
+ *         description: Password reset email sent
+ *       404:
+ *         description: User does not exist
+ *       500:
+ *         description: Internal server error
+ */
+
+/**
+ * @swagger
+ * /api/reset-password:
+ *   post:
+ *     summary: Reset user password with token
+ *     tags: [Auth]
+ *     requestBody:
+ *       description: Token from email and new password
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *               - newPassword
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 example: abc123def456
+ *               newPassword:
+ *                 type: string
+ *                 format: password
+ *     responses:
+ *       200:
+ *         description: Password successfully changed
+ *       400:
+ *         description: Invalid token or internal server error
+ */
+
 const User = require("../models/User");
 const preUser = require("../models/preUser");
 const bcrypt = require("bcryptjs");

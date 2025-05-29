@@ -15,6 +15,7 @@ const { protect } = require("./middleware/authMiddleware");
 
 const app = express();
 app.use(express.json());
+const { swaggerUi, specs } = require("./swagger");
 
 app.use(
   cors({
@@ -36,7 +37,7 @@ mongoose
 app.get("/", (req, res) => {
   res.send("API IS RUNNING");
 });
-
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 app.post("/api/auth/pre-register", preRegister);
 app.post("/api/auth/verify-email", verifyEmail);
 app.post("/api/auth/save-dob", saveDOB);
