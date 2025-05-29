@@ -2,11 +2,13 @@ const express = require("express");
 const mongoose = require("mongoose");
 require("dotenv").config();
 const {
-  register,
   login,
-  verifyOtp,
   forgotPassword,
   resetPassword,
+  preRegister,
+  verifyEmail,
+  saveDOB,
+  completeRegister,
 } = require("./controllers/authController");
 const { protect } = require("./middleware/authMiddleware");
 
@@ -27,8 +29,10 @@ app.get("/", (req, res) => {
   res.send("API IS RUNNING");
 });
 
-app.post("/api/register", register);
+app.post("/api/auth/pre-register", preRegister);
+app.post("/api/auth/verify-email", verifyEmail);
+app.post("/api/auth/save-dob", saveDOB);
+app.post("/api/auth/complete-registration", completeRegister);
 app.post("/api/login", login);
-app.post("/api/otp", verifyOtp);
 app.post("/api/forgot-password", forgotPassword);
 app.post("/api/reset-password", resetPassword);
