@@ -21,6 +21,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",
+      "http://localhost:5173",
       "https://streamjump.info",
       "https://auth.streamjump.info",
     ],
@@ -46,6 +47,6 @@ app.post("/api/auth/pre-register", preRegister);
 app.post("/api/auth/verify-email", verifyEmail);
 app.post("/api/auth/save-dob", saveDOB);
 app.post("/api/auth/complete-registration", completeRegister);
-app.post("/api/login", login);
-app.post("/api/forgot-password", forgotPassword);
-app.post("/api/reset-password", resetPassword);
+app.post("/api/auth/login", login);
+app.post("/api/auth/forgot-password", forgotPassword);
+app.post("/api/auth/reset-password", resetPassword);

@@ -128,7 +128,7 @@
 
 /**
  * @swagger
- * /login:
+ *  /auth/login:
  *   post:
  *     summary: User login with email and password
  *     tags: [Auth]
@@ -161,7 +161,7 @@
 
 /**
  * @swagger
- * /forgot-password:
+ *  /auth/forgot-password:
  *   post:
  *     summary: Send password reset email
  *     tags: [Auth]
@@ -190,7 +190,7 @@
 
 /**
  * @swagger
- * /reset-password:
+ *  /auth/reset-password:
  *   post:
  *     summary: Reset user password with token
  *     tags: [Auth]
