@@ -95,7 +95,7 @@
 
 /**
  * @swagger
- * /auth/complete-register:
+ * /auth/complete-registration:
  *   post:
  *     summary: Complete user registration after email verification
  *     tags: [Auth]
