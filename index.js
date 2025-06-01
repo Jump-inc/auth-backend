@@ -19,7 +19,11 @@ const { swaggerUi, specs } = require("./swagger");
 
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://streamjump.info"],
+    origin: [
+      "http://localhost:3000",
+      "https://streamjump.info",
+      "https://auth.streamjump.info",
+    ],
     credentials: true,
   })
 );

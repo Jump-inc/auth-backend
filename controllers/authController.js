@@ -1,6 +1,6 @@
 /**
  * @swagger
- * /api/auth/pre-register:
+ * /auth/pre-register:
  *   post:
  *     summary: Send OTP to email
  *     tags: [Auth]
@@ -26,7 +26,7 @@
 
 /**
  * @swagger
- * /api/auth/verify-email:
+ * /auth/verify-email:
  *   post:
  *     summary: Verify user's email with OTP
  *     tags: [Auth]
@@ -57,7 +57,7 @@
 
 /**
  * @swagger
- * /api/auth/save-dob:
+ * /auth/save-dob:
  *   post:
  *     summary: Save user's date of birth after email verification
  *     tags: [Auth]
@@ -91,7 +91,7 @@
 
 /**
  * @swagger
- * /api/auth/complete-register:
+ * /auth/complete-register:
  *   post:
  *     summary: Complete registration by setting password
  *     tags: [Auth]
@@ -128,7 +128,7 @@
 
 /**
  * @swagger
- * /api/login:
+ * /login:
  *   post:
  *     summary: User login with email and password
  *     tags: [Auth]
@@ -161,7 +161,7 @@
 
 /**
  * @swagger
- * /api/forgot-password:
+ * /forgot-password:
  *   post:
  *     summary: Send password reset email
  *     tags: [Auth]
@@ -190,7 +190,7 @@
 
 /**
  * @swagger
- * /api/reset-password:
+ * /reset-password:
  *   post:
  *     summary: Reset user password with token
  *     tags: [Auth]
