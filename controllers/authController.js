@@ -242,30 +242,37 @@
  * @swagger
  * /auth/reset-password:
  *   post:
- *     summary: Reset password using token
+ *     summary: Reset password using OTP sent to email
  *     tags: [Auth]
  *     requestBody:
- *       description: Token and new password to reset password
  *       required: true
+ *       description: Email, OTP, and new password for resetting the user's password
  *       content:
  *         application/json:
  *           schema:
  *             type: object
  *             required:
- *               - token
+ *               - email
+ *               - otp
  *               - newPassword
  *             properties:
- *               token:
+ *               email:
  *                 type: string
- *                 description: Password reset token from email link
+ *                 format: email
+ *               otp:
+ *                 type: string
+ *                 description: 6-digit one-time password sent to user's email
  *               newPassword:
  *                 type: string
  *                 format: password
+ *                 minLength: 6
  *     responses:
  *       200:
  *         description: Password successfully changed
+ *       400:
+ *         description: Invalid or expired OTP
  *       404:
- *         description: User not found or invalid token
+ *         description: User not found
  *       500:
  *         description: Internal server error
  */
