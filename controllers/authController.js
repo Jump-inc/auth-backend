@@ -446,10 +446,13 @@ const completeRegister = async (req, res) => {
       console.error("unable to send mail");
       error.response?.body || error.message;
     }
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
 
     return res
       .status(200)
-      .json({ message: "User sucessfully created", user, referenceId });
+      .json({ message: "User sucessfully created", token, referenceId });
   } catch (error) {
     return res.status(500).json({ message: error, referenceId });
   }
