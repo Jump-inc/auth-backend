@@ -2,10 +2,10 @@
  * @swagger
  * /auth/pre-register:
  *   post:
- *     summary: Send OTP to email
+ *     summary: Send OTP to email to start registration
  *     tags: [Auth]
  *     requestBody:
- *       description: Email to receive OTP
+ *       description: Email to receive the OTP
  *       required: true
  *       content:
  *         application/json:
@@ -17,18 +17,35 @@
  *               email:
  *                 type: string
  *                 format: email
+ *                 example: user@example.com
  *     responses:
  *       200:
  *         description: OTP sent successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: successfully sent otp
  *       400:
- *         description: Unable to send OTP
+ *         description: User exists already or unable to send OTP
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: User exists already, kindly log in
  */
 
 /**
  * @swagger
  * /auth/verify-email:
  *   post:
- *     summary: Verify user's email with OTP
+ *     summary: Verify OTP and mark email as verified
  *     tags: [Auth]
  *     requestBody:
  *       description: Email and OTP for verification
@@ -50,19 +67,40 @@
  *                 example: "123456"
  *     responses:
  *       200:
- *         description: Email successfully verified
+ *         description: Email verified successfully, returns referenceId for registration completion
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: email successfully verified!
+ *                 referenceId:
+ *                   type: string
+ *                   example: d290f1ee-6c54-4b01-90e6-d701748f0851
  *       400:
  *         description: Invalid or expired OTP
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: invalid or expired otp
+ *       500:
+ *         description: Server error during verification
  */
 
 /**
  * @swagger
  * /auth/complete-register:
  *   post:
- *     summary: Complete registration by setting password
+ *     summary: Complete user registration after email verification
  *     tags: [Auth]
  *     requestBody:
- *       description: Email, password, and confirmPassword to finish signup
+ *       description: User details along with referenceId from email verification
  *       required: true
  *       content:
  *         application/json:
@@ -71,7 +109,8 @@
  *             required:
  *               - email
  *               - password
- *               - confirmPassword
+ *               - birthday
+ *               - referenceId
  *             properties:
  *               email:
  *                 type: string
@@ -80,26 +119,52 @@
  *               password:
  *                 type: string
  *                 format: password
- *               confirmPassword:
+ *               birthday:
  *                 type: string
- *                 format: password
+ *                 format: date
+ *                 example: 2000-01-01
+ *               referenceId:
+ *                 type: string
+ *                 example: d290f1ee-6c54-4b01-90e6-d701748f0851
  *     responses:
  *       200:
  *         description: User successfully created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: User successfully created
+ *                 user:
+ *                   type: object
+ *                   description: Created user data
+ *                 referenceId:
+ *                   type: string
  *       400:
- *         description: Passwords do not match or incomplete registration
+ *         description: Validation errors such as unverified email, age restriction, or existing user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 referenceId:
+ *                   type: string
  *       500:
  *         description: Internal server error
  */
 
 /**
  * @swagger
- *  /auth/login:
+ * /auth/login:
  *   post:
  *     summary: User login with email and password
  *     tags: [Auth]
  *     requestBody:
- *       description: User credentials
+ *       description: User credentials for login
  *       required: true
  *       content:
  *         application/json:
@@ -118,21 +183,40 @@
  *                 format: password
  *     responses:
  *       200:
- *         description: Login successful and JWT token returned
+ *         description: Login successful, returns JWT token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Login successful
+ *                 token:
+ *                   type: string
+ *                   description: JWT token
+ *       401:
+ *         description: Invalid credentials
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: user not found/invalid credentials
  *       400:
- *         description: Unable to log in
- *       500:
- *         description: User not found or invalid credentials
+ *         description: Login error
  */
 
 /**
  * @swagger
- *  /auth/forgot-password:
+ * /auth/forgot-password:
  *   post:
- *     summary: Send password reset email
+ *     summary: Send password reset email with token
  *     tags: [Auth]
  *     requestBody:
- *       description: Email to send password reset link
+ *       description: User email to send password reset link
  *       required: true
  *       content:
  *         application/json:
@@ -149,19 +233,19 @@
  *       200:
  *         description: Password reset email sent
  *       404:
- *         description: User does not exist
+ *         description: User not found
  *       500:
  *         description: Internal server error
  */
 
 /**
  * @swagger
- *  /auth/reset-password:
+ * /auth/reset-password:
  *   post:
- *     summary: Reset user password with token
+ *     summary: Reset password using token
  *     tags: [Auth]
  *     requestBody:
- *       description: Token from email and new password
+ *       description: Token and new password to reset password
  *       required: true
  *       content:
  *         application/json:
@@ -173,17 +257,18 @@
  *             properties:
  *               token:
  *                 type: string
- *                 example: abc123def456
+ *                 description: Password reset token from email link
  *               newPassword:
  *                 type: string
  *                 format: password
  *     responses:
  *       200:
  *         description: Password successfully changed
- *       400:
- *         description: Invalid token or internal server error
+ *       404:
+ *         description: User not found or invalid token
+ *       500:
+ *         description: Internal server error
  */
-
 const User = require("../models/User");
 const preUser = require("../models/preUser");
 const bcrypt = require("bcryptjs");
@@ -258,7 +343,7 @@ const verifyEmail = async (req, res) => {
       .status(200)
       .json({ message: "email successfully verified!", referenceId });
   } catch (error) {
-    res.status(400).json({ message: "unable to verify email" });
+    res.status(500).json({ message: "unable to verify email" });
   }
 };
 
@@ -375,10 +460,10 @@ const login = async (req, res) => {
     const user = await User.findOne({ email });
     if (!user)
       return res
-        .status(500)
+        .status(401)
         .json({ message: "user not found/invalid credentials" });
     const match = await bcrypt.compare(password, user.password);
-    if (!match) return res.status(500).json({ message: "Password incorrect" });
+    if (!match) return res.status(401).json({ message: "Password incorrect" });
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
@@ -430,7 +515,7 @@ const resetPassword = async (req, res) => {
       resetPasswordToken: hashedToken,
       resetPasswordExpires: { $gt: Date.now() },
     });
-    if (!user) return res.status(400).json({ message: "cannot find user" });
+    if (!user) return res.status(404).json({ message: "cannot find user" });
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
     user.resetPasswordToken = undefined;
@@ -440,7 +525,7 @@ const resetPassword = async (req, res) => {
     res.status(200).json({ message: "password sucessfully changed" });
   } catch (error) {
     console.log(error);
-    res.status(400).json({ message: "internal server error" });
+    res.status(500).json({ message: "internal server error" });
   }
 };
 
