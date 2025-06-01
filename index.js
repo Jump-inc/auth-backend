@@ -26,6 +26,8 @@ app.use(
       "https://auth.streamjump.info",
     ],
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
@@ -42,6 +44,7 @@ mongoose
 app.get("/", (req, res) => {
   res.send("API IS RUNNING");
 });
+
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 app.post("/api/auth/pre-register", preRegister);
 app.post("/api/auth/verify-email", verifyEmail);
