@@ -10,7 +10,7 @@ const options = {
       description:
         "Auth endpoints for email verification, DOB validation, user registration, user log in, user password recovery",
     },
-    servers: [{ url: "http://localhost:4000" }],
+    servers: [{ url: "https://auth.streamjump.info/api-docs/" }],
   },
   apis: ["./controllers/authController.js"],
 };
