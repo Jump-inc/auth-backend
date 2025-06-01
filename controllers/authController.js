@@ -57,40 +57,6 @@
 
 /**
  * @swagger
- * /auth/save-dob:
- *   post:
- *     summary: Save user's date of birth after email verification
- *     tags: [Auth]
- *     requestBody:
- *       description: Email and date of birth
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *               - dob
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *                 example: user@example.com
- *               dob:
- *                 type: string
- *                 format: date
- *                 example: 2010-05-20
- *     responses:
- *       200:
- *         description: DOB saved successfully
- *       400:
- *         description: Email not verified or user under 13 years old
- *       500:
- *         description: Failed to save DOB
- */
-
-/**
- * @swagger
  * /auth/complete-register:
  *   post:
  *     summary: Complete registration by setting password
@@ -224,15 +190,20 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const sgMail = require("@sendgrid/mail");
 const crypto = require("crypto");
+
+const { v4: uuidv4 } = require("uuid");
+
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 const preRegister = async (req, res) => {
   const { email } = req.body;
   try {
-    let user = await preUser.findOne({ email });
-    if (user && user.isVerified)
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
       return res
         .status(400)
         .json({ message: "User exists already, kindly log in" });
+    }
+    let user = await preUser.findOne({ email });
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
     if (!user) {
@@ -278,66 +249,64 @@ const verifyEmail = async (req, res) => {
     }
     user.isVerified = true;
     user.otp = undefined;
+
+    const referenceId = uuidv4();
+    user.referenceId = referenceId;
+
     await user.save();
-    res.status(200).json({ message: "email successfully verified!" });
+    res
+      .status(200)
+      .json({ message: "email successfully verified!", referenceId });
   } catch (error) {
     res.status(400).json({ message: "unable to verify email" });
   }
 };
 
-const saveDOB = async (req, res) => {
-  const { email, dob } = req.body;
-  try {
-    const user = await preUser.findOne({ email });
-    if (!user || !user.isVerified) {
-      return res.status(400).json({ message: "Email not verified" });
-    }
+const completeRegister = async (req, res) => {
+  const { email, password, birthday, referenceId } = req.body;
 
-    const birthDate = new Date(dob);
+  try {
+    const preuser = await preUser.findOne({ email });
+    if (
+      !preuser ||
+      !preuser.isVerified ||
+      !preuser.referenceId ||
+      preuser.referenceId !== referenceId
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Email is not verified", referenceId });
+    }
+    if (!birthday) {
+      return res
+        .status(400)
+        .json({ message: "Birthday is required!", referenceId });
+    }
+    const birthDate = new Date(birthday);
     const today = new Date();
     const age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
     const dayDiff = today.getDate() - birthDate.getDate();
     const actualAge =
       monthDiff < 0 || (monthDiff === 0 && dayDiff < 0) ? age - 1 : age;
-
-    if (actualAge < 13)
+    if (actualAge < 13) {
       return res
         .status(400)
-        .json({ message: "You must be at least 13 years old to sign up!" });
-    user.dob = birthDate;
-    await user.save();
-    res.status(200).json({ message: "DOB saved" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Failed to save DOB" });
-  }
-};
-
-const completeRegister = async (req, res) => {
-  const { email, password, confirmPassword } = req.body;
-  if (password !== confirmPassword) {
-    return res.status(400).json({ message: "passwords do not match!" });
-  }
-  try {
-    const preuser = await preUser.findOne({ email });
-    if (!preuser || !preuser.isVerified || !preuser.dob) {
-      return res
-        .status(400)
-        .json({ message: "user not completely registered" });
+        .json({ message: "You're not old enough", referenceId });
     }
     const existingUser = await User.findOne({ email });
-    if (existingUser)
+    if (existingUser) {
       return res
         .status(400)
-        .json({ message: "User exists already, please log in" });
+        .json({ message: "User already exists", referenceId });
+    }
     const hashed = await bcrypt.hash(password, 10);
     const user = await User.create({
       email: preuser.email,
-      dob: preuser.dob,
+      birthDate: preuser.dob,
       password: hashed,
     });
-    await preUser.deleteOne({ _id: preUser._id });
+    await preUser.deleteOne({ _id: preuser._id });
 
     const msg = {
       to: email,
@@ -393,9 +362,11 @@ const completeRegister = async (req, res) => {
       error.response?.body || error.message;
     }
 
-    return res.status(200).json({ message: "User sucessfully created", user });
+    return res
+      .status(200)
+      .json({ message: "User sucessfully created", user, referenceId });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: error, referenceId });
   }
 };
 const login = async (req, res) => {
@@ -476,7 +447,6 @@ const resetPassword = async (req, res) => {
 module.exports = {
   verifyEmail,
   preRegister,
-  saveDOB,
   completeRegister,
   login,
   forgotPassword,

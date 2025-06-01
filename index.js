@@ -8,7 +8,6 @@ const {
   resetPassword,
   preRegister,
   verifyEmail,
-  saveDOB,
   completeRegister,
 } = require("./controllers/authController");
 const { protect } = require("./middleware/authMiddleware");
@@ -48,7 +47,6 @@ app.get("/", (req, res) => {
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 app.post("/api/auth/pre-register", preRegister);
 app.post("/api/auth/verify-email", verifyEmail);
-app.post("/api/auth/save-dob", saveDOB);
 app.post("/api/auth/complete-registration", completeRegister);
 app.post("/api/auth/login", login);
 app.post("/api/auth/forgot-password", forgotPassword);

@@ -4,6 +4,7 @@ const preUserSchema = new mongoose.Schema({
   otp: String,
   otpExpires: Date,
   isVerified: { type: Boolean, default: false },
+  referenceId: { type: String, default: null },
   dob: Date,
 });
 module.exports = mongoose.model("preUser", preUserSchema);
