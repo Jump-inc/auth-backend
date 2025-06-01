@@ -482,25 +482,24 @@ const forgotPassword = async (req, res) => {
   try {
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: "User does not exist" });
-    const resetToken = crypto.randomBytes(32).toString("hex");
-    const resetTokenHashed = crypto
-      .createHash("sha256")
-      .update(resetToken)
-      .digest("hex");
-    user.resetPasswordToken = resetTokenHashed;
-    user.resetPasswordExpires = Date.now() + 60 * 60 * 1000;
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+
+    user.resetPasswordOTP = otp;
+    user.resetPasswordExpires = otpExpires;
     await user.save();
 
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
     const msg = {
       to: email,
       from: { email: "no-reply@streamjump.info", name: "Jump" },
       subject: "Password Reset Request",
       html: `
-        <p>You requested a password reset.</p>
-        <p>Click this link to reset your password:</p>
-        <a href="${resetUrl}">${resetUrl}</a>
-        <p>This link will expire in 1 hour.</p>
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+          <h2>Password Reset</h2>
+          <p>Your one-time password (OTP) to reset your password is:</p>
+          <h1 style="font-size: 32px;">${otp}</h1>
+          <p>This OTP will expire in 10 minutes.</p>
+        </div>
       `,
     };
     await sgMail.send(msg);
@@ -511,17 +510,19 @@ const forgotPassword = async (req, res) => {
   }
 };
 const resetPassword = async (req, res) => {
-  const { token, newPassword } = req.body;
+  const { email, otp, newPassword } = req.body;
   try {
-    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
-    const user = await User.findOne({
-      resetPasswordToken: hashedToken,
-      resetPasswordExpires: { $gt: Date.now() },
-    });
-    if (!user) return res.status(404).json({ message: "cannot find user" });
+    const user = await User.findOne({ email });
+    if (
+      !user ||
+      user.resetPasswordOTP !== otp ||
+      user.resetPasswordExpires < Date.now()
+    ) {
+      return res.status(404).json({ message: "cannot find user" });
+    }
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
-    user.resetPasswordToken = undefined;
+    user.resetPasswordOtp = undefined;
     user.resetPasswordExpires = undefined;
 
     await user.save();
