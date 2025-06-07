@@ -277,6 +277,30 @@
  *         description: Internal server error
  */
 
+/**
+ * @swagger
+ * /auth/me:
+ *   get:
+ *     summary: Get logged-in user info
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved user info
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 user:
+ *                   type: object
+ *                   description: The authenticated user's information
+ *       401:
+ *         description: Missing or invalid token
+ *       404:
+ *         description: User not found
+ */
 const User = require("../models/User");
 const preUser = require("../models/preUser");
 const bcrypt = require("bcryptjs");
