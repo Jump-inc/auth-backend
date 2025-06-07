@@ -95,12 +95,13 @@
 
 /**
  * @swagger
- * /auth/complete-registration:
+ * /auth/complete-register:
  *   post:
- *     summary: Complete user registration after email verification
- *     tags: [Auth]
+ *     summary: Complete user registration
+ *     description: Finalizes registration after email verification and reference ID validation. Optionally accepts name and username.
+ *     tags:
+ *       - Auth
  *     requestBody:
- *       description: User details along with referenceId from email verification
  *       required: true
  *       content:
  *         application/json:
@@ -115,17 +116,20 @@
  *               email:
  *                 type: string
  *                 format: email
- *                 example: user@example.com
  *               password:
  *                 type: string
- *                 format: password
  *               birthday:
  *                 type: string
  *                 format: date
- *                 example: 2000-01-01
+ *                 example: "2001-05-20"
  *               referenceId:
  *                 type: string
- *                 example: d290f1ee-6c54-4b01-90e6-d701748f0851
+ *               name:
+ *                 type: string
+ *                 example: "Faruq Bakare"
+ *               username:
+ *                 type: string
+ *                 example: "faruq_dev"
  *     responses:
  *       200:
  *         description: User successfully created
@@ -137,13 +141,12 @@
  *                 message:
  *                   type: string
  *                   example: User successfully created
- *                 user:
- *                   type: object
- *                   description: Created user data
+ *                 token:
+ *                   type: string
  *                 referenceId:
  *                   type: string
  *       400:
- *         description: Validation errors such as unverified email, age restriction, or existing user
+ *         description: Bad request (validation failed, not verified, etc)
  *         content:
  *           application/json:
  *             schema:
@@ -154,9 +157,8 @@
  *                 referenceId:
  *                   type: string
  *       500:
- *         description: Internal server error
+ *         description: Server error
  */
-
 /**
  * @swagger
  * /auth/login:
