@@ -279,7 +279,7 @@
 
 /**
  * @swagger
- * auth/me:
+ * /auth/me:
  *   get:
  *     summary: Get logged-in user info
  *     tags: [Auth]
