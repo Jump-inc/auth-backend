@@ -52,4 +52,4 @@ app.post("/api/auth/complete-registration", completeRegister);
 app.post("/api/auth/login", login);
 app.post("/api/auth/forgot-password", forgotPassword);
 app.post("/api/auth/reset-password", resetPassword);
-app.post("/api/me", returnUserInfo);
+app.get("/api/me", returnUserInfo);
