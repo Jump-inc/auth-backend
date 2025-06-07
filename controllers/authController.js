@@ -95,7 +95,7 @@
 
 /**
  * @swagger
- * /auth/complete-register:
+ * /auth/complete-registration:
  *   post:
  *     summary: Complete user registration
  *     description: Finalizes registration after email verification and reference ID validation. Optionally accepts name and username.
