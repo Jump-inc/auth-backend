@@ -380,7 +380,7 @@ const verifyEmail = async (req, res) => {
 };
 
 const completeRegister = async (req, res) => {
-  const { email, password, birthday, referenceId } = req.body;
+  const { email, password, birthday, referenceId, username, name } = req.body;
 
   try {
     const preuser = await preUser.findOne({ email });
@@ -418,11 +418,16 @@ const completeRegister = async (req, res) => {
         .json({ message: "User already exists", referenceId });
     }
     const hashed = await bcrypt.hash(password, 10);
-    const user = await User.create({
+    const userData = {
       email: preuser.email,
-      birthDate: preuser.dob,
+      dob: preuser.dob,
       password: hashed,
-    });
+    };
+
+    if (req.body.name) userData.name = req.body.name;
+    if (req.body.username) userData.username = req.body.username;
+
+    const user = await User.create(userData);
     await preUser.deleteOne({ _id: preuser._id });
 
     const msg = {
