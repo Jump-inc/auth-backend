@@ -573,7 +573,9 @@ const returnUserInfo = async (req, res) => {
   const token = authHeader.split(" ")[1];
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.id).select("-password");
+    const user = await User.findById(decoded.id).select(
+      "-password -resetPasswordToken -resetPasswordOTP"
+    );
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
