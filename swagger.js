@@ -11,6 +11,20 @@ const options = {
         "Auth endpoints for email verification, DOB validation, user registration, user log in, user password recovery",
     },
     servers: [{ url: "https://auth.streamjump.info/api" }],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
+      },
+    },
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
   },
   apis: ["./controllers/authController.js"],
 };
