@@ -276,6 +276,7 @@
  *       500:
  *         description: Internal server error
  */
+
 const User = require("../models/User");
 const preUser = require("../models/preUser");
 const bcrypt = require("bcryptjs");
@@ -540,6 +541,27 @@ const resetPassword = async (req, res) => {
   }
 };
 
+const returnUserInfo = async (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "invalid token" });
+  }
+  const token = authHeader.split(" ")[1];
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ user });
+  } catch (error) {
+    console.error("Token verification error:", error);
+    res.status(401).json({ message: "Invalid or expired token" });
+  }
+};
+
 module.exports = {
   verifyEmail,
   preRegister,
@@ -547,4 +569,5 @@ module.exports = {
   login,
   forgotPassword,
   resetPassword,
+  returnUserInfo,
 };
