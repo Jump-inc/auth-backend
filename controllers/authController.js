@@ -309,6 +309,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const sgMail = require("@sendgrid/mail");
 const crypto = require("crypto");
+const axios = require("axios");
 
 const { v4: uuidv4 } = require("uuid");
 
@@ -430,6 +431,7 @@ const completeRegister = async (req, res) => {
     if (req.body.username) userData.username = req.body.username;
 
     const user = await User.create(userData);
+
     await preUser.deleteOne({ _id: preuser._id });
 
     const msg = {
@@ -489,6 +491,18 @@ const completeRegister = async (req, res) => {
       expiresIn: "1d",
     });
 
+    await axios.post(
+      "http://localhost:1000/api/profiles",
+      {
+        userId: user._id,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
     return res
       .status(200)
       .json({ message: "User sucessfully created", token, referenceId });
@@ -509,7 +523,7 @@ const login = async (req, res) => {
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
-    return res.status(200).json({ message: "Login successful", token });
+    return res.status(200).json({ message: "Login successful", token, user });
   } catch (error) {
     console.log("unable to log in");
     return res.status(400).json({ message: error });
@@ -580,9 +594,7 @@ const returnUserInfo = async (req, res) => {
   const token = authHeader.split(" ")[1];
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.id).select(
-      "-password -resetPasswordToken -resetPasswordOTP"
-    );
+    const user = await User.findById(decoded.id).select();
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -595,6 +607,28 @@ const returnUserInfo = async (req, res) => {
   }
 };
 
+const getUserById = async (req, res) => {
+  const userId = req.params.id;
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res
+      .status(401)
+      .json({ message: "Authorization header missing or malformed" });
+  }
+
+  const token = authHeader.split(" ")[1];
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const user = await User.findById(userId).select("name email username");
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    res.status(200).json(user);
+  } catch (err) {
+    return res.status(401).json({ message: "Invalid or expired token" });
+  }
+};
+
 module.exports = {
   verifyEmail,
   preRegister,
@@ -603,4 +637,5 @@ module.exports = {
   forgotPassword,
   resetPassword,
   returnUserInfo,
+  getUserById,
 };

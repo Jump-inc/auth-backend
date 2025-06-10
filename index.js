@@ -10,6 +10,7 @@ const {
   verifyEmail,
   completeRegister,
   returnUserInfo,
+  getUserById,
 } = require("./controllers/authController");
 const { protect } = require("./middleware/authMiddleware");
 
@@ -53,3 +54,4 @@ app.post("/api/auth/login", login);
 app.post("/api/auth/forgot-password", forgotPassword);
 app.post("/api/auth/reset-password", resetPassword);
 app.get("/api/auth/me", returnUserInfo);
+app.get("/api/user/:id", getUserById);
